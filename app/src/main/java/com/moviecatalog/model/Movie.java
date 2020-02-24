@@ -21,6 +21,11 @@ public class Movie implements Parcelable {
 
 
     public String getPosterImage(){
+
+        if (poster == null || poster.equals(null)){
+            return null;
+        }
+
         return poster.getImage();
     }
 
