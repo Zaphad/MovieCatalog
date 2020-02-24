@@ -33,8 +33,6 @@ public class MainActivity extends AppCompatActivity {
 
         List<ImageView> imageViewList = new ArrayList<>(20);
 
-        //String imageUri = "https://kudago.com/media/images/movie/poster/47/1d/471df47d35a035c28978909315602bba.jpg";
-
         Resources r = getResources();
         String name = getPackageName();
         int[] ids = new int[20];
@@ -49,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
         IPageApi pageApi = retrofit.create(IPageApi.class);
 
-        Call<Page> call = pageApi.getPage();
+        Call<Page> call = pageApi.getPage(1);
 
         call.enqueue(new Callback<Page>() {
             @Override
@@ -60,7 +58,6 @@ public class MainActivity extends AppCompatActivity {
                 int i = 0;
                 for (ImageView imageView : imageViewList) {
                     Picasso.get().load(movieList.get(i).getPosterImage()).into(imageView);
-                    //Picasso.with(imageView.getContext()).load(movieList.get(i).getPosterImage()).into(imageView);
                     i++;
                 }
 
@@ -71,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
 
     }
 }

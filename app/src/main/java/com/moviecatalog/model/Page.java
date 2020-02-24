@@ -7,6 +7,8 @@ import java.util.List;
 
 public class Page {
 
+
+
     @SerializedName("count")
     @Expose
     private Integer count;
@@ -15,10 +17,12 @@ public class Page {
     private String next;
     @SerializedName("previous")
     @Expose
-    private Object previous;
+    private String previous;
     @SerializedName("results")
     @Expose
     private List<Movie> movies = null;
+
+    private final int currentPageIndex = getCurrentPageIndex();
 
     public Integer getCount() {
         return count;
@@ -36,11 +40,11 @@ public class Page {
         this.next = next;
     }
 
-    public Object getPrevious() {
+    public String getPrevious() {
         return previous;
     }
 
-    public void setPrevious(Object previous) {
+    public void setPrevious(String previous) {
         this.previous = previous;
     }
 
@@ -50,6 +54,21 @@ public class Page {
 
     public void setResults(List<Movie> movies) {
         this.movies = movies;
+    }
+
+    public int getCurrentPageIndex(){
+
+        if(next == null||next.equals(null))
+        {
+            return 201;
+        }
+        if (previous == null||previous.equals(null))
+        {
+            return 1;
+        }
+        previous.split("=");
+        return currentPageIndex;
+
     }
 
 }
