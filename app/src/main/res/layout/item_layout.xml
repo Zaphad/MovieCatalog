@@ -2,9 +2,10 @@
 
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:elevation="16dp">
+    android:layout_width="match_parent"
+    android:layout_height="160dp"
+    android:elevation="16dp"
+    android:layout_margin="2dp">
 
 
     <LinearLayout
@@ -13,18 +14,22 @@
         android:orientation="vertical">
 
         <ImageView
-            android:id="@+id/image"
+            android:id="@+id/movie_poster"
             android:layout_width="95dp"
             android:layout_height="128dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="8dp"
             android:scaleType="fitXY"
             tools:src="@tools:sample/avatars" />
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="title"
-            android:textSize="20sp"
+            android:text="movie_title"
+            android:textSize="16sp"
             android:textStyle="bold"
+            android:textColor="#000"
             android:gravity="center"
+            android:id="@+id/movie_title"
             />
 
     </LinearLayout>

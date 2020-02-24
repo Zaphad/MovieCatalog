@@ -88,7 +88,6 @@ class Poster {
     @SerializedName("image")
     @Expose
     private String image;
-    @SerializedName("source")
 
     public String getImage() {
         return image;
