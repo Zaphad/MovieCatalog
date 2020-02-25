@@ -7,8 +7,6 @@ import java.util.List;
 
 public class Page {
 
-
-
     @SerializedName("count")
     @Expose
     private Integer count;

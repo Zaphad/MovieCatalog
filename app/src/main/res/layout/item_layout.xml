@@ -30,6 +30,8 @@
             android:textColor="#000"
             android:gravity="center"
             android:id="@+id/movie_title"
+            android:singleLine="true"
+
             />
 
     </LinearLayout>

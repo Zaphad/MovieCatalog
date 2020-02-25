@@ -62,20 +62,6 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         return movieList.size();
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-
-        ImageView posters;
-
-        TextView titles;
-
-        public ViewHolder(View itemView) {
-            super(itemView);
-            posters = itemView.findViewById(R.id.movie_poster);
-            titles = itemView.findViewById(R.id.movie_title);
-        }
-    }
-
-
     public void addMovies(List<Movie> movieList) {
 
         for (Movie movie : movieList) {
@@ -83,6 +69,18 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             this.movieList.add(movie);
         }
         notifyDataSetChanged();
+    }
+
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+
+        ImageView posters;
+        TextView titles;
+
+        public ViewHolder(View itemView) {
+            super(itemView);
+            posters = itemView.findViewById(R.id.movie_poster);
+            titles = itemView.findViewById(R.id.movie_title);
+        }
     }
 
 }
