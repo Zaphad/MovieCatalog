@@ -8,6 +8,7 @@
     android:background="#1c1d1f"
     tools:context=".view.MainActivity">
 
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
@@ -27,7 +28,5 @@
             android:visibility="gone"
             android:foregroundGravity="center"
             />
-
-
 
 </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

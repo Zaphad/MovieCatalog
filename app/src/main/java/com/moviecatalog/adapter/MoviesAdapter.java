@@ -1,5 +1,6 @@
-package com.moviecatalog.adapters;
+package com.moviecatalog.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,35 +12,38 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.moviecatalog.R;
 import com.moviecatalog.model.Movie;
+import com.moviecatalog.view.MainActivity;
 import com.squareup.picasso.Picasso;
 
 import java.util.List;
 
-public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapter.ViewHolder> {
+public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder> {
 
     private List<Movie> movieList;
 
-    private Context context;
+    private MainActivity mainActivity;
 
-    public RecyclerViewAdapter(List<Movie> movieList, Context context) {
+
+
+    public MoviesAdapter(List<Movie> movieList, MainActivity mainActivity) {
         this.movieList = movieList;
-        this.context = context;
+        this.mainActivity = mainActivity;
     }
 
     public List<Movie> getMovieList() {
         return movieList;
     }
 
-    public Context getContext() {
-        return context;
+    public Context getMainActivity() {
+        return mainActivity;
     }
 
     public void setMovieList(List<Movie> imageList) {
         this.movieList = movieList;
     }
 
-    public void setContext(Context context) {
-        this.context = context;
+    public void setMainActivity(MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
     }
 
     @Override
@@ -55,6 +59,13 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
         holder.titles.setText(movie.getTitle());
         Picasso.get().load(movie.getPosterImage()).into(holder.posters);
 
+        holder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainActivity.onMovieItemClick(position);
+            }
+        });
+
     }
 
     @Override
@@ -69,6 +80,14 @@ public class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerViewAdapte
             this.movieList.add(movie);
         }
         notifyDataSetChanged();
+    }
+
+    public void removeMovieList(List<Movie> movieList){
+
+
+        this.movieList.remove(movieList);
+        notifyDataSetChanged();
+
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
