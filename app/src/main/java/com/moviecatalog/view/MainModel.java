@@ -35,6 +35,7 @@ public class MainModel implements MainContract.Model{
 
             @Override
             public void onFailure(Call<Page> call, Throwable t) {
+                onFinishedListener.onFailure(t);
             }
         });
 
@@ -56,17 +57,12 @@ public class MainModel implements MainContract.Model{
                     List<Movie> movieList = response.body().getMovies();
 
                     onFinishedListener.onFinished(movieList,false);
-                    /*
-                    moviesAdapter.removeMovieList(movieList);
-                    moviesAdapter.addMovies(movieList);
 
-                    swipeContainer.setRefreshing(false);
-                    */
                 }
 
                 @Override
                 public void onFailure(Call<Page> call, Throwable t) {
-
+                    onFinishedListener.onFailure(t);
                 }
             });
         }

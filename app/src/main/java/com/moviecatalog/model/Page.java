@@ -1,11 +1,14 @@
 package com.moviecatalog.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class Page {
+public class Page implements Parcelable {
 
     @SerializedName("count")
     @Expose
@@ -20,7 +23,29 @@ public class Page {
     @Expose
     private List<Movie> movies = null;
 
-    private final int currentPageIndex = getCurrentPageIndex();
+
+    protected Page(Parcel in) {
+        if (in.readByte() == 0) {
+            count = null;
+        } else {
+            count = in.readInt();
+        }
+        next = in.readString();
+        previous = in.readString();
+        movies = in.createTypedArrayList(Movie.CREATOR);
+    }
+
+    public static final Creator<Page> CREATOR = new Creator<Page>() {
+        @Override
+        public Page createFromParcel(Parcel in) {
+            return new Page(in);
+        }
+
+        @Override
+        public Page[] newArray(int size) {
+            return new Page[size];
+        }
+    };
 
     public Integer getCount() {
         return count;
@@ -54,19 +79,22 @@ public class Page {
         this.movies = movies;
     }
 
-    public int getCurrentPageIndex(){
 
-        if(next == null||next.equals(null))
-        {
-            return 201;
-        }
-        if (previous == null||previous.equals(null))
-        {
-            return 1;
-        }
-        previous.split("=");
-        return currentPageIndex;
-
+    @Override
+    public int describeContents() {
+        return 0;
     }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (count == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(count);
+        }
+        dest.writeString(next);
+        dest.writeString(previous);
+        dest.writeTypedList(movies);
+    }
 }

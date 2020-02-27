@@ -1,6 +1,5 @@
 package com.moviecatalog.adapter;
 
-import android.app.Activity;
 import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,21 +29,15 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
         this.mainActivity = mainActivity;
     }
 
-    public List<Movie> getMovieList() {
-        return movieList;
-    }
+    public List<Movie> getMovieList() { return movieList; }
+
+    public void setMovieList(List<Movie> imageList) { this.movieList = movieList; }
 
     public Context getMainActivity() {
         return mainActivity;
     }
 
-    public void setMovieList(List<Movie> imageList) {
-        this.movieList = movieList;
-    }
-
-    public void setMainActivity(MainActivity mainActivity) {
-        this.mainActivity = mainActivity;
-    }
+    public void setMainActivity(MainActivity mainActivity) { this.mainActivity = mainActivity; }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {

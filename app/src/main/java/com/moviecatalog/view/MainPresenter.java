@@ -21,19 +21,19 @@ public class MainPresenter implements MainContract.Presenter, MainContract.Model
     }
 
     @Override
-    public void getMoreData(int pageNo) {
+    public void getMoreData(int pageNumber) {
         if (movieListView != null) {
             movieListView.showProgress();
         }
-        movieListModel.getMovieList(this, pageNo);
+        movieListModel.getMovieList(this, pageNumber);
     }
 
     @Override
-    public void updateData(int pageNo) {
+    public void updateData(int pageNumber) {
         if (movieListView != null) {
             movieListView.showProgress();
         }
-        movieListModel.updateMovieList(this, pageNo);
+        movieListModel.updateMovieList(this, pageNumber);
     }
 
     @Override
@@ -51,6 +51,7 @@ public class MainPresenter implements MainContract.Presenter, MainContract.Model
 
         if(isRefresh){
             movieListView.removeDataFromRecyclerView(movieList);
+            movieListView.setDataToRecyclerView(movieList);
         }
         else{
             movieListView.setDataToRecyclerView(movieList);

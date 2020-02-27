@@ -38,9 +38,9 @@ public interface MainContract {
 
         void onDestroy();
 
-        void getMoreData(int pageNo);
+        void getMoreData(int pageNumber);
 
-        void updateData(int pageNo);
+        void updateData(int pageNumber);
 
         void requestDataFromServer();
 

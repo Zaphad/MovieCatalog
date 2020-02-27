@@ -15,29 +15,22 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.snackbar.Snackbar;
 import com.moviecatalog.R;
 import com.moviecatalog.adapter.MoviesAdapter;
 import com.moviecatalog.model.Movie;
-import com.moviecatalog.model.Page;
-import com.moviecatalog.network.ApiInterface;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
-import static com.moviecatalog.network.ApiClient.getApiClient;
-
-public class MainActivity extends AppCompatActivity implements MovieItemClickListener{
+public class MainActivity extends AppCompatActivity implements MovieItemClickListener, MainContract.View {
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private GridLayoutManager layoutManager;
-    private ApiInterface service;
     private MoviesAdapter moviesAdapter;
     private List<Movie> movieList;
+    private MainPresenter mainPresenter;
     //setting refresh layout
     private SwipeRefreshLayout swipeContainer;
 
@@ -70,18 +63,35 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //setup swiperefreshlayout
+        initializeUserInterface();
+
+        setListeners();
+
+        mainPresenter = new MainPresenter(this);
+        mainPresenter.requestDataFromServer();
+
+    }
+
+/*
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+
+        List<? extends Parcelable> parcelableMovieList = new ArrayList<>();
+        parcelableMovieList.add(moviesAdapter.getMovieList().get(0));
+        outState.putParcelableArray();
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+    }
+*/
+
+    private void initializeUserInterface(){
+
         swipeContainer = findViewById(R.id.swipe_container);
-        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-
-                swipeContainer.setRefreshing(true);
-                refreshAll();
-
-            }
-        });
-
         movieList = new ArrayList<>();
         progressBar = findViewById(R.id.progress_bar);
         recyclerView = findViewById(R.id.recycler_view);
@@ -91,45 +101,21 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
         moviesAdapter = new MoviesAdapter(movieList, this);
         recyclerView.setAdapter(moviesAdapter);
 
-        /*
-        recyclerView.getChildCount();
-        View View = recyclerView.getChildAt(0);
-        */
+    }
 
-        service = getApiClient().create(ApiInterface.class);
+    private void setListeners(){
 
-        progressBar.setVisibility(View.VISIBLE);
-
-        Call<Page> call = service.getPage(pageNumber);
-
-        call.enqueue(new Callback<Page>() {
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
-            public void onResponse(Call<Page> call, Response<Page> response) {
+            public void onRefresh() {
 
-                List<Movie> movieList = response.body().getMovies();
+                swipeContainer.setRefreshing(true);
 
-                moviesAdapter.addMovies(movieList);
-                Toast.makeText(MainActivity.this, "somthing happens", Toast.LENGTH_SHORT).show();
-                progressBar.setVisibility(View.GONE);
-            }
+                mainPresenter.updateData(pageNumber);
+                swipeContainer.setRefreshing(false);
 
-            @Override
-            public void onFailure(Call<Page> call, Throwable t) {
             }
         });
-
-/*
-        CardView cardView = findViewById(R.id.movie_card);
-
-        cardView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(android.view.View v) {
-
-                Toast.makeText(MainActivity.this, "Card clicked", Toast.LENGTH_SHORT).show();
-
-            }
-        });*/
-
 
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -146,71 +132,13 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
                         }
                     }
                     if (!isLoading && (totalItemCount - visibleItemCount) <= (pastVisibleItems + viewThreshold)) {
-                        pageNumber++;
-                        pagination();
+
+                        mainPresenter.getMoreData(pageNumber);
                         isLoading = true;
                     }
                 }
             }
         });
-    }
-
-
-    private void refreshAll(){
-
-        //for (int i = 1; i<=pageNumber;i++) {
-
-            Call<Page> call = service.getPage(1);
-
-            call.enqueue(new Callback<Page>() {
-                @Override
-                public void onResponse(Call<Page> call, Response<Page> response) {
-
-                    List<Movie> movieList = response.body().getMovies();
-                    moviesAdapter.removeMovieList(movieList);
-                    moviesAdapter.addMovies(movieList);
-                    Toast.makeText(MainActivity.this, "updating", Toast.LENGTH_SHORT).show();
-                    pageNumber = 1;
-                    swipeContainer.setRefreshing(false);
-                }
-
-                @Override
-                public void onFailure(Call<Page> call, Throwable t) {
-
-                }
-            });
-        //}
-
-    }
-
-    private void pagination() {
-        progressBar.setVisibility(View.VISIBLE);
-        Call<Page> call = service.getPage(pageNumber);
-
-        call.enqueue(new Callback<Page>() {
-            @Override
-            public void onResponse(Call<Page> call, Response<Page> response) {
-
-                if (!response.body().getNext().equals(null)) {
-
-                    List<Movie> movieList = response.body().getMovies();
-
-                    moviesAdapter.addMovies(movieList);
-                    Toast.makeText(MainActivity.this, "Page " + pageNumber + " is loaded", Toast.LENGTH_SHORT).show();
-
-
-                } else {
-                    Toast.makeText(MainActivity.this, "No more pages for load", Toast.LENGTH_SHORT).show();
-                }
-                progressBar.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onFailure(Call<Page> call, Throwable t) {
-
-            }
-        });
-
     }
 
     @Override
@@ -220,7 +148,47 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
             return;
         }
 
-        Toast.makeText(MainActivity.this, "id is:" + movieList.get(position).getId() + movieList.get(position).getTitle(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, movieList.get(position).getTitle(), Toast.LENGTH_SHORT).show();
 
+    }
+
+    @Override
+    public void showProgress() {
+
+        progressBar.setVisibility(View.VISIBLE);
+
+    }
+
+    @Override
+    public void hideProgress() {
+
+        progressBar.setVisibility(View.GONE);
+
+    }
+
+    @Override
+    public void removeDataFromRecyclerView(List<Movie> movieArrayList) {
+
+        moviesAdapter.removeMovieList(movieArrayList);
+
+    }
+
+    @Override
+    public void setDataToRecyclerView(List<Movie> movieArrayList) {
+
+        moviesAdapter.addMovies(movieArrayList);
+        pageNumber++;
+
+    }
+
+    @Override
+    public void onResponseFailure(Throwable throwable) {
+        Snackbar.make(recyclerView,"Проверьте соединение с интернетом и попробуйте еще раз",Snackbar.LENGTH_LONG).show();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mainPresenter.onDestroy();
     }
 }
