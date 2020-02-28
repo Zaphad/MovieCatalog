@@ -28,8 +28,10 @@ public class MainModel implements MainContract.Model{
             @Override
             public void onResponse(Call<Page> call, Response<Page> response) {
 
+                if (response.body() == null|| response.body().equals(null)){
+                    return;
+                }
                 List<Movie> movieList = response.body().getMovies();
-
                 onFinishedListener.onFinished(movieList,false);
             }
 
@@ -46,7 +48,6 @@ public class MainModel implements MainContract.Model{
 
         ApiInterface apiInterface = getApiClient().create(ApiInterface.class);
 
-        for (int i = 1; i<=pageNumber;i++) {
 
             Call<Page> call = apiInterface.getPage(pageNumber);
 
@@ -56,7 +57,7 @@ public class MainModel implements MainContract.Model{
 
                     List<Movie> movieList = response.body().getMovies();
 
-                    onFinishedListener.onFinished(movieList,false);
+                    onFinishedListener.onFinished(movieList,true);
 
                 }
 
@@ -65,7 +66,7 @@ public class MainModel implements MainContract.Model{
                     onFinishedListener.onFailure(t);
                 }
             });
-        }
+
 
     }
 }

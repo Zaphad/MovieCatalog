@@ -12,6 +12,7 @@ public interface MainContract {
             void onFinished(List<Movie> movieList, boolean isRefresh);
 
             void onFailure(Throwable t);
+
         }
 
         void getMovieList(OnFinishedListener onFinishedListener, int pageNumber);

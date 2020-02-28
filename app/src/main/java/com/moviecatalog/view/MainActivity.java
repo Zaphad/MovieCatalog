@@ -2,10 +2,13 @@ package com.moviecatalog.view;
 
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.widget.Filter;
 import android.widget.ProgressBar;
 import android.widget.SearchView;
 import android.widget.Toast;
@@ -35,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
     private SwipeRefreshLayout swipeContainer;
 
     private int pageNumber = 1;
+    private int prevPageNumber = 1;
 
     //pagination variables
     private boolean isLoading = true;
@@ -54,14 +58,68 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
         searchView.setSearchableInfo(
                 searchManager.getSearchableInfo(getComponentName()));
 
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+
+                moviesAdapter.clearMovieList();
+                moviesAdapter.restoreOriginalMovieList();
+
+                return true;
+            }
+        });
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener(){
+
+
+
+
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+/*
+                moviesAdapter.getFilter().filter(query);
+                List<Movie> filtered = moviesAdapter.getMovieListFiltered();
+                if(filtered.equals(null)||filtered == null){return false;}else{
+                    setDataToRecyclerView(filtered);
+                }*/
+
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+
+
+                //Setting movie list to mv holder
+
+
+                //clearing main movie list
+                // moviesAdapter.clearMovieList();
+
+                moviesAdapter.getFilter().filter(newText);
+                List<Movie> filtered = moviesAdapter.getMovieListFiltered();
+
+                if(filtered.equals(null)||filtered == null){return false;}else{
+                    Log.println(Log.INFO,"query: ", newText + " item filtered count" + filtered.size());
+                    moviesAdapter.setMovieList(filtered);
+                }
+                return true;
+            }
+        });
+
         return true;
     }
 
+    @Override
+    public boolean onSearchRequested() {
+        return super.onSearchRequested();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        onNewIntent(getIntent());
+
 
         initializeUserInterface();
 
@@ -72,22 +130,17 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
 
     }
 
-/*
     @Override
-    protected void onSaveInstanceState(@NonNull Bundle outState) {
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        if (Intent.ACTION_SEARCH.equals(intent)) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
 
-        List<? extends Parcelable> parcelableMovieList = new ArrayList<>();
-        parcelableMovieList.add(moviesAdapter.getMovieList().get(0));
-        outState.putParcelableArray();
-        super.onSaveInstanceState(outState);
-    }
+            //moviesAdapter.getMovieListFiltered();
 
-    @Override
-    protected void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
+        }
 
     }
-*/
 
     private void initializeUserInterface(){
 
@@ -99,6 +152,7 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
         moviesAdapter = new MoviesAdapter(movieList, this);
+        moviesAdapter.setMovieListFiltered(new ArrayList<>());
         recyclerView.setAdapter(moviesAdapter);
 
     }
@@ -110,8 +164,8 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
             public void onRefresh() {
 
                 swipeContainer.setRefreshing(true);
+                mainPresenter.updateData(1);
 
-                mainPresenter.updateData(pageNumber);
                 swipeContainer.setRefreshing(false);
 
             }
@@ -124,6 +178,8 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
                 visibleItemCount = layoutManager.getChildCount();
                 totalItemCount = layoutManager.getItemCount();
                 pastVisibleItems = layoutManager.findFirstVisibleItemPosition();
+
+
                 if (dy > 0) {
                     if (isLoading) {
                         if (totalItemCount > previousTotal) {
@@ -131,9 +187,13 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
                             previousTotal = totalItemCount;
                         }
                     }
-                    if (!isLoading && (totalItemCount - visibleItemCount) <= (pastVisibleItems + viewThreshold)) {
 
-                        mainPresenter.getMoreData(pageNumber);
+                    if (!isLoading && (totalItemCount - visibleItemCount) <= (pastVisibleItems + viewThreshold)) {
+                        Log.println(Log.INFO,"pg number: ", Integer.toString(pageNumber));
+                        if( prevPageNumber != pageNumber){
+                            mainPresenter.getMoreData(pageNumber);
+                            prevPageNumber = pageNumber;
+                        }
                         isLoading = true;
                     }
                 }
@@ -147,8 +207,7 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
         if (position == -1) {
             return;
         }
-
-        Toast.makeText(this, movieList.get(position).getTitle(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, moviesAdapter.getMovieList().get(position).getTitle(), Toast.LENGTH_SHORT).show();
 
     }
 
@@ -168,15 +227,22 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
 
     @Override
     public void removeDataFromRecyclerView(List<Movie> movieArrayList) {
-
-        moviesAdapter.removeMovieList(movieArrayList);
-
+        moviesAdapter.backUpMovieList();
+        moviesAdapter.clearMovieList();
+        previousTotal = 0;
+        pageNumber = 1;
+        prevPageNumber = 1;
     }
+
 
     @Override
     public void setDataToRecyclerView(List<Movie> movieArrayList) {
-
+        moviesAdapter.backUpMovieList();
         moviesAdapter.addMovies(movieArrayList);
+        Toast.makeText(this, "previous total is: "+ previousTotal+ " "+recyclerView.getChildCount()+" "+
+                +moviesAdapter.getItemCount()+"page " + pageNumber+" "+isLoading+" child count: "+layoutManager.getChildCount()
+                + " item count: " + layoutManager.getItemCount() + " visible pos: " +layoutManager.findFirstVisibleItemPosition(), Toast.LENGTH_SHORT).show();
+
         pageNumber++;
 
     }

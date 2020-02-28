@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">MovieCatalog</string>
+    <string name="app_name">Movie catalog</string>
     <string name="search_title">Поиск</string>
     <string name="search_hint">Поиск по названию фильма</string>
 </resources>

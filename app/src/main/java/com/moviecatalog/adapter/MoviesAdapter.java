@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Filter;
+import android.widget.Filterable;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -14,30 +16,54 @@ import com.moviecatalog.model.Movie;
 import com.moviecatalog.view.MainActivity;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder> {
+public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder> implements Filterable {
 
     private List<Movie> movieList;
+    private List<Movie> movieListFiltered;
+    private List<Movie> movieListOriginal;
 
     private MainActivity mainActivity;
-
-
 
     public MoviesAdapter(List<Movie> movieList, MainActivity mainActivity) {
         this.movieList = movieList;
         this.mainActivity = mainActivity;
     }
 
-    public List<Movie> getMovieList() { return movieList; }
+    public List<Movie> getMovieListOriginal() {
+        return movieListOriginal;
+    }
 
-    public void setMovieList(List<Movie> imageList) { this.movieList = movieList; }
+    public void setMovieListOriginal(List<Movie> movieListOriginal) {
+        this.movieListOriginal = movieListOriginal;
+    }
+
+    public List<Movie> getMovieListFiltered() {
+        return movieListFiltered;
+    }
+
+    public void setMovieListFiltered(List<Movie> movieListFiltered) {
+        this.movieListFiltered = movieListFiltered;
+    }
+
+    public List<Movie> getMovieList() {
+        return movieList;
+    }
+
+    public void setMovieList(List<Movie> movieList) {
+        this.movieList = movieList;
+        notifyDataSetChanged();
+    }
 
     public Context getMainActivity() {
         return mainActivity;
     }
 
-    public void setMainActivity(MainActivity mainActivity) { this.mainActivity = mainActivity; }
+    public void setMainActivity(MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
+    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -58,7 +84,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
                 mainActivity.onMovieItemClick(position);
             }
         });
-
     }
 
     @Override
@@ -68,19 +93,68 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
 
     public void addMovies(List<Movie> movieList) {
 
-        for (Movie movie : movieList) {
+        if (!this.movieList.contains(movieList)) {
+            for (Movie movie : movieList) {
 
-            this.movieList.add(movie);
+                this.movieList.add(movie);
+            }
         }
         notifyDataSetChanged();
     }
 
-    public void removeMovieList(List<Movie> movieList){
-
+    public void removeMovieList(List<Movie> movieList) {
 
         this.movieList.remove(movieList);
         notifyDataSetChanged();
 
+    }
+
+    public void clearMovieList() {
+        this.movieList.clear();
+        notifyDataSetChanged();
+    }
+
+    public void backUpMovieList() {
+
+        this.movieListOriginal = this.movieList;
+        notifyDataSetChanged();
+    }
+
+    public void restoreOriginalMovieList() {
+
+        this.movieList = this.movieListOriginal;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                String charString = constraint.toString();
+                if (charString.isEmpty()) {
+                    movieListFiltered = movieListOriginal;
+                } else {
+                    List<Movie> filteredList = new ArrayList<>();
+                    for (Movie movie : movieListOriginal) {
+                        if (movie.getTitle().toLowerCase().contains(charString.toLowerCase())) {
+                            filteredList.add(movie);
+                        }
+                    }
+                    movieListFiltered = filteredList;
+                }
+
+                FilterResults filterResults = new FilterResults();
+                filterResults.values = movieListFiltered;
+                return filterResults;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                movieListFiltered = (ArrayList<Movie>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

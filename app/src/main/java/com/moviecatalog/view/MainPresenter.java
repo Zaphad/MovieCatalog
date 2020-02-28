@@ -15,6 +15,7 @@ public class MainPresenter implements MainContract.Presenter, MainContract.Model
         movieListModel = new MainModel();
     }
 
+
     @Override
     public void onDestroy() {
         this.movieListView = null;
@@ -46,6 +47,7 @@ public class MainPresenter implements MainContract.Presenter, MainContract.Model
 
     }
 
+
     @Override
     public void onFinished(List<Movie> movieList, boolean isRefresh) {
 
@@ -68,4 +70,5 @@ public class MainPresenter implements MainContract.Presenter, MainContract.Model
             movieListView.hideProgress();
         }
     }
+
 }
