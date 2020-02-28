@@ -79,7 +79,6 @@ public class Page implements Parcelable {
         this.movies = movies;
     }
 
-
     @Override
     public int describeContents() {
         return 0;

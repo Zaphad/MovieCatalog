@@ -102,13 +102,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
         notifyDataSetChanged();
     }
 
-    public void removeMovieList(List<Movie> movieList) {
-
-        this.movieList.remove(movieList);
-        notifyDataSetChanged();
-
-    }
-
     public void clearMovieList() {
         this.movieList.clear();
         notifyDataSetChanged();

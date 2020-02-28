@@ -14,8 +14,6 @@ import static com.moviecatalog.network.ApiClient.getApiClient;
 
 public class MainModel implements MainContract.Model{
 
-
-
     @Override
     public void getMovieList(OnFinishedListener onFinishedListener, int pageNumber) {
 
