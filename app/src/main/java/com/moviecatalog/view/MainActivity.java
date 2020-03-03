@@ -25,14 +25,15 @@ import com.moviecatalog.model.Movie;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MovieItemClickListener, MainContract.View {
+public class MainActivity extends AppCompatActivity implements MovieItemClickListener, MainContract.View, SearchView.OnQueryTextListener {
 
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
     private GridLayoutManager layoutManager;
     private MoviesAdapter moviesAdapter;
-    private List<Movie> movieList;
     private MainPresenter mainPresenter;
+    private SearchView searchView;
+
     //setting refresh layout
     private SwipeRefreshLayout swipeContainer;
 
@@ -48,86 +49,85 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         initializeUserInterface();
-
         setListeners();
-
         mainPresenter = new MainPresenter(this);
         mainPresenter.requestDataFromServer();
-
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.options_menu, menu);
-
         // Associate searchable configuration with the SearchView
-        SearchManager searchManager =
-                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getComponentName()));
-
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        searchView = (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setOnQueryTextListener(this);
         searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-
-                moviesAdapter.clearMovieList();
                 moviesAdapter.restoreOriginalMovieList();
-
                 return true;
-            }
-        });
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return searchByTitle(newText);
             }
         });
         return true;
     }
 
-    public boolean searchByTitle(String newText) {
-        moviesAdapter.getFilter().filter(newText);
-        List<Movie> filtered = moviesAdapter.getMovieListFiltered();
-        if (filtered.size() != 0) {
-            new CountDownTimer(1000, 1000) {
-                public void onTick(long millisUntilFinished) {
-                }
-                public void onFinish() {
-                    if (filtered.equals(null) || filtered == null) {
-                        return;
-                    } else {
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        return false;
+    }
+
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        if (newText.length() > 0) {
+            List<Movie> filtered = filter(newText);
+            Log.println(Log.INFO,"size ="," " + moviesAdapter.getMovieListFiltered().size());
+            if (filtered.size() != 0) {
+                new CountDownTimer(1000, 1000) {
+                    public void onTick(long millisUntilFinished) {
+                    }
+                    public void onFinish() {
                         moviesAdapter.setMovieList(filtered);
                     }
-                }
-            }.start();
+                }.start();
+            }
+            return true;
+        } else {
+            return false;
         }
-        return true;
+    }
+
+    private List<Movie> filter(String query){
+        List<Movie> movieListFiltered = new ArrayList<>();
+        String charString = query.toString();
+        if (charString.isEmpty()) {
+            movieListFiltered = moviesAdapter.getMovieListOriginal();
+        } else {
+            for (Movie movie : moviesAdapter.getMovieListOriginal()) {
+                if (movie.getTitle().toLowerCase().contains(charString.toLowerCase())
+                        || movie.getTitle().toUpperCase().contains(charString.toUpperCase())) {
+                    movieListFiltered.add(movie);
+                }
+            }
+            return movieListFiltered;
+        }
+        return null;
     }
 
     private void initializeUserInterface() {
 
         swipeContainer = findViewById(R.id.swipe_container);
-        movieList = new ArrayList<>();
         progressBar = findViewById(R.id.progress_bar);
         recyclerView = findViewById(R.id.recycler_view);
         layoutManager = new GridLayoutManager(this, 2);
-        recyclerView.setHasFixedSize(true);
+        //recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(layoutManager);
-        moviesAdapter = new MoviesAdapter(movieList, this);
+        moviesAdapter = new MoviesAdapter(new ArrayList<>(), this);
         moviesAdapter.setMovieListFiltered(new ArrayList<>());
+        moviesAdapter.setMovieListOriginal(new ArrayList<>());
         recyclerView.setAdapter(moviesAdapter);
-
     }
 
     private void setListeners() {
@@ -135,12 +135,9 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-
                 swipeContainer.setRefreshing(true);
                 mainPresenter.updateData(1);
-
                 swipeContainer.setRefreshing(false);
-
             }
         });
 
@@ -171,30 +168,25 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
                 }
             }
         });
+
     }
 
     @Override
     public void onMovieItemClick(int position) {
-
         if (position == -1) {
             return;
         }
         Toast.makeText(this, moviesAdapter.getMovieList().get(position).getTitle(), Toast.LENGTH_SHORT).show();
-
     }
 
     @Override
     public void showProgress() {
-
         progressBar.setVisibility(View.VISIBLE);
-
     }
 
     @Override
     public void hideProgress() {
-
         progressBar.setVisibility(View.GONE);
-
     }
 
     @Override
@@ -223,4 +215,5 @@ public class MainActivity extends AppCompatActivity implements MovieItemClickLis
         super.onDestroy();
         mainPresenter.onDestroy();
     }
+    
 }

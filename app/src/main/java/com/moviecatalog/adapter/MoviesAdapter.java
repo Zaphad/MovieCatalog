@@ -19,7 +19,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder> implements Filterable {
+public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder>{
 
     private List<Movie> movieList;
     private List<Movie> movieListFiltered;
@@ -46,6 +46,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
 
     public void setMovieListFiltered(List<Movie> movieListFiltered) {
         this.movieListFiltered = movieListFiltered;
+        notifyDataSetChanged();
     }
 
     public List<Movie> getMovieList() {
@@ -57,7 +58,7 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
         notifyDataSetChanged();
     }
 
-    public Context getMainActivity() {
+    public MainActivity getMainActivity() {
         return mainActivity;
     }
 
@@ -92,7 +93,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
     }
 
     public void addMovies(List<Movie> movieList) {
-
         if (!this.movieList.contains(movieList)) {
             for (Movie movie : movieList) {
 
@@ -117,37 +117,6 @@ public class MoviesAdapter extends RecyclerView.Adapter<MoviesAdapter.ViewHolder
 
         this.movieList = this.movieListOriginal;
         notifyDataSetChanged();
-    }
-
-    @Override
-    public Filter getFilter() {
-        return new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                String charString = constraint.toString();
-                if (charString.isEmpty()) {
-                    movieListFiltered = movieListOriginal;
-                } else {
-                    List<Movie> filteredList = new ArrayList<>();
-                    for (Movie movie : movieListOriginal) {
-                        if (movie.getTitle().toLowerCase().contains(charString.toLowerCase())) {
-                            filteredList.add(movie);
-                        }
-                    }
-                    movieListFiltered = filteredList;
-                }
-
-                FilterResults filterResults = new FilterResults();
-                filterResults.values = movieListFiltered;
-                return filterResults;
-            }
-
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                movieListFiltered = (ArrayList<Movie>) results.values;
-                notifyDataSetChanged();
-            }
-        };
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
